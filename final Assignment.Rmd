@@ -61,25 +61,31 @@ library(repmis)
 library(e1071)
 
 
-## Download the training and test data
+# Download the training and testing data
 
 training <- read.csv("pml-training.csv", na.strings = c("NA", ""))
 
 testing <- read.csv("pml-testing.csv", na.strings = c("NA", ""))
 
-## Data preprocess for traing and test data
+#Data clean for traing and testing data. 
+Removing the missing value fot training and test data.
+
 
 training <- training[, colSums(is.na(training)) == 0]
 
 testing <- testing[, colSums(is.na(testing)) == 0]
 
+Removing the first few columns of the data
+
 trainData <- training[, -c(1:7)]
 
 testData <- testing[, -c(1:7)]
 
-## Partition the data to training and validation
+# Partition the data to training and validation data for cross validation
 
-set.seed(7826) 
+Separate the training dataset to training set(70%) and validata set(30%)
+
+set.seed(7878) 
 
 inTrain <- createDataPartition(trainData$classe, p = 0.7, list = FALSE)
 
@@ -87,9 +93,9 @@ train <- trainData[inTrain, ]
 
 validation <- trainData[-inTrain, ]
 
-## Predict with Decision TreeModel
+# Predict with Decision Tree Model using 10-fold out of sample testing
 
-control <- trainControl(method = "cv", number = 5)
+control <- trainControl(method = "cv", number = 10)
 
 fitRpart <- train(classe ~ ., data = train, method = "rpart", trControl = control)
 
@@ -101,29 +107,32 @@ predictRpart <- predict(fitRpart, validation)
 
 fancyRpartPlot(fitRpart$finalModel)
 
-# Show prediction result
+# Confusion Matrix and show prediction result
+Because the accuracy of decision tree is too low(accuracy=0.494). The out of sample error estimation is 50.6%. Therefore, we should try other method to fit the model.
 
-confRpart <- confusionMatrix(valid$classe, predict_rpart)
+confRpart <- confusionMatrix(valid$classe, predictRpart)
 
-## Confusion Matrix and Statistics
 
 accuracyRpart <- confRpart$overall[1]
 
-## Using Random Forest
+## Using Random Forest method
+Try random forest method to build the model and predict the result
 
 fitRf <- train(classe ~ ., data = train, method = "rf", trControl = control)
 
 print(fitRf, digits = 4)
 
-# predict outcomes using validation set
+# predict outcomes using validation set by 10-fold out of sample testing
 
 predictRf <- predict(fitRf, validation)
-# Show prediction result
+
 
 confRf <- confusionMatrix(validation$classe, predictRf)
 
 
 accuracyRf <- confRf$overall[1]
+
+Because the accuracy of random forest is good(accuracy=0.994). The out of sample error estimation is 0.6%. Therefore, we could use random forest method to fit the model with test data.
 
 predict(fitRf, testData)
 
