@@ -153,28 +153,31 @@ $(document).ready(function () {
 <p>library(repmis)</p>
 <p>library(e1071)</p>
 </div>
-<div id="download-the-training-and-test-data" class="section level2">
-<h2>Download the training and test data</h2>
+<div id="download-the-training-and-testing-data" class="section level1">
+<h1>Download the training and testing data</h1>
 <p>training &lt;- read.csv(“pml-training.csv”, na.strings = c(“NA”, “”))</p>
 <p>testing &lt;- read.csv(“pml-testing.csv”, na.strings = c(“NA”, “”))</p>
 </div>
-<div id="data-preprocess-for-traing-and-test-data" class="section level2">
-<h2>Data preprocess for traing and test data</h2>
+<div id="data-clean-for-traing-and-testing-data." class="section level1">
+<h1>Data clean for traing and testing data.</h1>
+<p>Removing the missing value fot training and test data.</p>
 <p>training &lt;- training[, colSums(is.na(training)) == 0]</p>
 <p>testing &lt;- testing[, colSums(is.na(testing)) == 0]</p>
+<p>Removing the first few columns of the data</p>
 <p>trainData &lt;- training[, -c(1:7)]</p>
 <p>testData &lt;- testing[, -c(1:7)]</p>
 </div>
-<div id="partition-the-data-to-training-and-validation" class="section level2">
-<h2>Partition the data to training and validation</h2>
-<p>set.seed(7826)</p>
+<div id="partition-the-data-to-training-and-validation-data-for-cross-validation" class="section level1">
+<h1>Partition the data to training and validation data for cross validation</h1>
+<p>Separate the training dataset to training set(70%) and validata set(30%)</p>
+<p>set.seed(7878)</p>
 <p>inTrain &lt;- createDataPartition(trainData$classe, p = 0.7, list = FALSE)</p>
 <p>train &lt;- trainData[inTrain, ]</p>
 <p>validation &lt;- trainData[-inTrain, ]</p>
 </div>
-<div id="predict-with-decision-treemodel" class="section level2">
-<h2>Predict with Decision TreeModel</h2>
-<p>control &lt;- trainControl(method = “cv”, number = 5)</p>
+<div id="predict-with-decision-tree-model-using-10-fold-out-of-sample-testing" class="section level1">
+<h1>Predict with Decision Tree Model using 10-fold out of sample testing</h1>
+<p>control &lt;- trainControl(method = “cv”, number = 10)</p>
 <p>fitRpart &lt;- train(classe ~ ., data = train, method = “rpart”, trControl = control)</p>
 <p>print(fitRpart, digits = 4)</p>
 </div>
@@ -183,24 +186,24 @@ $(document).ready(function () {
 <p>predictRpart &lt;- predict(fitRpart, validation)</p>
 <p>fancyRpartPlot(fitRpart$finalModel)</p>
 </div>
-<div id="show-prediction-result" class="section level1">
-<h1>Show prediction result</h1>
-<p>confRpart &lt;- confusionMatrix(valid$classe, predict_rpart)</p>
-<div id="confusion-matrix-and-statistics" class="section level2">
-<h2>Confusion Matrix and Statistics</h2>
+<div id="confusion-matrix-and-show-prediction-result" class="section level1">
+<h1>Confusion Matrix and show prediction result</h1>
+<p>Because the accuracy of decision tree is too low(accuracy=0.494). The out of sample error estimation is 50.6%. Therefore, we should try other method to fit the model.</p>
+<p>confRpart &lt;- confusionMatrix(valid$classe, predictRpart)</p>
 <p>accuracyRpart &lt;- confRpart$overall[1]</p>
-</div>
-<div id="using-random-forest" class="section level2">
-<h2>Using Random Forest</h2>
+<div id="using-random-forest-method" class="section level2">
+<h2>Using Random Forest method</h2>
+<p>Try random forest method to build the model and predict the result</p>
 <p>fitRf &lt;- train(classe ~ ., data = train, method = “rf”, trControl = control)</p>
 <p>print(fitRf, digits = 4)</p>
 </div>
 </div>
-<div id="predict-outcomes-using-validation-set-1" class="section level1">
-<h1>predict outcomes using validation set</h1>
-<p>predictRf &lt;- predict(fitRf, validation) # Show prediction result</p>
+<div id="predict-outcomes-using-validation-set-by-10-fold-out-of-sample-testing" class="section level1">
+<h1>predict outcomes using validation set by 10-fold out of sample testing</h1>
+<p>predictRf &lt;- predict(fitRf, validation)</p>
 <p>confRf &lt;- confusionMatrix(validation$classe, predictRf)</p>
 <p>accuracyRf &lt;- confRf$overall[1]</p>
+<p>Because the accuracy of random forest is good(accuracy=0.994). The out of sample error estimation is 0.6%. Therefore, we could use random forest method to fit the model with test data.</p>
 <p>predict(fitRf, testData)</p>
 </div>
 
